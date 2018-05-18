@@ -1,0 +1,16 @@
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Requester	KEYWORD1
+Advertiser	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+init	KEYWORD2
+readTemperature	KEYWORD2
+displayTemperature	KEYWORD2
+Advertiser	KEYWORD2
+
