@@ -21,7 +21,8 @@
 #define MIN 5
 #define MAX 40
 
-#define SLEEP_TIME 15000
+#define SLEEP_TIME_REQUESTER 15000
+#define SLEEP_TIME_ADVERTISER 5000
 #define SEND_TIME 10000 //10 seconds
 #define INTERVAL_BETWEEN_SEND 1000 //1 second
 #define RECEIVE_TIME 20000 //20 seconds

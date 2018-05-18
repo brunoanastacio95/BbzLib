@@ -130,7 +130,10 @@ void Requester::sendMessage(int rx_node_id)
 
       // wait ACK
       receiveACK = Requester::waitACK();
-      
+
+      if(receiveACK == 1){
+        return;
+      }
       if(receiveACK != 1){
         failTimes ++;
       }
@@ -164,11 +167,11 @@ bool Requester::waitACK()
         strcpy(ack, rf12_data);
         _ack.toCharArray(confirmAck, 4); 
         if(strcmp(ack, confirmAck)== 0){   // validar se é o serviço desejado
-          Serial.println("RECEIVED ACK - SLEEP 15 SECONDS");
+          Serial.print("RECEIVED ACK - SLEEP "); Serial.print(SLEEP_TIME_REQUESTER/1000); Serial.print(" SECONDS");Serial.println();
           _last_service_id = service_id;
           receiveACK = 0;
           failTimes = 0;
-          delay(SLEEP_TIME);
+          delay(SLEEP_TIME_REQUESTER);
           return 1;
         }     
       }
@@ -217,7 +220,6 @@ void Advertiser::advertise(String service){ // anuncia o serviço durante 3 segu
    // rf12_sleep(-1); 
     sum_time = 0;
     boolTime = true;
-    delay(2000);
 
     Serial.println("Wait for messages!");
     for( uint32_t tStart = millis();  (millis()-tStart) < RECEIVE_TIME;  ){
@@ -258,7 +260,6 @@ void Advertiser::sendACK(int n_id){
     msg.toCharArray(ack, 4);
     rf12_sendStart(n_id, &ack, sizeof ack); // 0 to broadcast service
     rf12_sendWait(0);
-    Serial.println("Send ACK ");
-    Serial.println("SLEEP 15 SECONDS");
-    delay(SLEEP_TIME);
+    Serial.print("SEND ACK - SLEEP "); Serial.print(SLEEP_TIME_ADVERTISER/1000); Serial.print(" SECONDS");Serial.println();
+    delay(SLEEP_TIME_ADVERTISER);
 }

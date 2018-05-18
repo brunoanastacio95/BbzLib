@@ -7,6 +7,6 @@ void setup() {
 }
 
 void loop() {
-  // display in this test is serial console
-  a.advertise("display");
+  	// display in this test is serial console
+  	a.advertise("display");
 }
