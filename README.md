@@ -25,9 +25,11 @@ This library require jcw/JeeLib:
 ## Authors
 
   Students (Escola Superior de Tecnologia e Gestão):
+  
     Bruno Anastácio - (https://github.com/brunoanastacio95)
     Bruno Fonseca
     José Guerra 
 
   Teacher:
+  
     Nuno Costa
