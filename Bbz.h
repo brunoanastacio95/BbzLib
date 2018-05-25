@@ -23,6 +23,7 @@
 #define MAX_MSG_SIZE 50
 
 #define SLEEP_TIME_REQUESTER 15000 // 15 seconds
+#define SEARCH_SERVICE_TIME 15000 // 15 seconds
 #define SLEEP_TIME_ADVERTISER 5000 // 5 seconds
 #define SEND_TIME 10000 // 10 seconds
 #define INTERVAL_BETWEEN_SEND 1000 // 1 second

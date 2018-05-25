@@ -57,7 +57,7 @@ void Requester::displayTemperature(float temp){
 }
 
 void Requester::prepareMessage(float temp){
-  if(temp > 0){
+  if(temp != 0){
     String msg ="";
     msg = String("T: ") + temp + String(" ºC ");
     msg.toCharArray(_messageTX, MAX_MSG_SIZE);
@@ -78,7 +78,7 @@ void Requester::searchService(String service){
         if(service_id != -1){
           searchingNode = 0;
         }
-        if((millis()-tStart) >= 15000){
+        if((millis()-tStart) >= SEARCH_SERVICE_TIME){
           searchingNode = 0;
         }
       }
@@ -90,7 +90,7 @@ void Requester::searchService(String service){
   if(service_id == -1){
     Serial.print("Wanted services not found. - SLEEP: ");
     Serial.print(SLEEP_TIME_REQUESTER/1000); Serial.print(" SECONDS");Serial.println();
-    delay(15000);
+    delay(SLEEP_TIME_REQUESTER);
     return;
   }
 
