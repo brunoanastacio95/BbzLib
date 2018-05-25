@@ -7,8 +7,8 @@
 */
 
 
-#include <JeeLib.h>
-#define RF69_COMPAT 0
+//#include <JeeLib.h>
+//#define RF69_COMPAT 0
 #include "Bbz.h"
 
 
@@ -17,7 +17,7 @@ ISR(WDT_vect) {
 } // interrupt handler for JeeLabs Sleepy power saving
 
 
-char _messageReceived[50];
+char _messageReceived[MAX_MSG_SIZE];
 
 Requester::Requester(){ }
 
@@ -52,23 +52,33 @@ float Requester::readTemperature(){
 
 void Requester::displayTemperature(float temp){
   String service ="s:display";
-  Requester::prepareMessageSearchService(temp, service);
+  Requester::prepareMessage(temp);
+  Requester::searchService(service);
 }
 
-void Requester::prepareMessageSearchService(float temp, String service){
-  String msg ="";
-  msg = String("T: ") + temp;
-  msg.toCharArray(_messageTX, 50);
+void Requester::prepareMessage(float temp){
+  if(temp > 0){
+    String msg ="";
+    msg = String("T: ") + temp + String(" ºC ");
+    msg.toCharArray(_messageTX, MAX_MSG_SIZE);
+    return;
+  }
+}
 
+void Requester::searchService(String service){
 
   int service_id = -1;
   //procurar nós com serviço de display
   if(_last_service_id == -1){
     Serial.println("Searching for a service: " + service);
       int searchingNode = 1;
+      uint32_t tStart = millis();
       while(searchingNode == 1){
         service_id = Requester::waitServices(service);
         if(service_id != -1){
+          searchingNode = 0;
+        }
+        if((millis()-tStart) >= 15000){
           searchingNode = 0;
         }
       }
@@ -77,13 +87,20 @@ void Requester::prepareMessageSearchService(float temp, String service){
     service_id = _last_service_id;
   }
 
+  if(service_id == -1){
+    Serial.print("Wanted services not found. - SLEEP: ");
+    Serial.print(SLEEP_TIME_REQUESTER/1000); Serial.print(" SECONDS");Serial.println();
+    delay(15000);
+    return;
+  }
+
   Requester::sendMessage(service_id); 
 }
 
 
 int Requester::waitServices(String service)
 {
-  char serviceAux[50]; 
+  char serviceAux[MAX_MSG_SIZE]; 
   int n_id = -1;
   if (rf12_recvDone()) //Is something arriving?
     {
@@ -94,8 +111,8 @@ int Requester::waitServices(String service)
             n_id = (rf12_hdr & 0x1F); //Source address
             strcpy(_messageReceived, rf12_data);
            // _messageReceived = rf12_data; // Data extraction
-            Serial.println("Service received: "); Serial.print(_messageReceived); Serial.println(); 
-            service.toCharArray(serviceAux, 50); 
+            Serial.print("Service found: "); Serial.print(_messageReceived); Serial.println(); 
+            service.toCharArray(serviceAux, MAX_MSG_SIZE); 
             delay(100);
             if(strcmp(_messageReceived, serviceAux)== 0){   // validar se é o serviço desejado
               return n_id;
@@ -153,7 +170,7 @@ void Requester::sendMessage(int rx_node_id)
 
 bool Requester::waitACK()
 {
-  uint32_t timeInterval = 1 * 50;       //50 milisegundos
+  uint32_t timeInterval = 1 * 5;       //5 milisegundos
   char ack[4]; char confirmAck[4]; String _ack = "ack";
   int service_id;
 
@@ -190,7 +207,7 @@ void Advertiser::init(int id_node){
   pinMode(4,OUTPUT); // Funky v3 RFM12B power control pin
   digitalWrite(4,LOW); //Make sure the RFM12B is on, yes LOW is ON
   delay(100); // Delay (or sleep) to allow the RFM12B to start up
-  rf12_initialize(id_node, RF12_868MHZ,1); 
+  rf12_initialize(id_node,RF12_868MHZ,1); 
   // rf12_control(0xC000); // Adjust low battery voltage to 2.2V, only for RFM12B
   Serial.begin(9600);
   delay(2000);
@@ -199,21 +216,21 @@ void Advertiser::init(int id_node){
 
 void Advertiser::advertise(String service){ // anuncia o serviço durante 3 segundos de 0.5 em 0.5 segundos, depois fica 10 segundos à escuta
   String msg ="s:"+service;
-  msg.toCharArray(_messageToAdvertise, 50);
+  msg.toCharArray(_messageToAdvertise, MAX_MSG_SIZE);
 
   if(boolTime == true){
     start_time = millis();
     boolTime = false;
   }
 
-  if(sum_time < delayToStopAdvertise){
+  if(sum_time < DELAY_TO_STOP_ADVERTISE){
     while (!rf12_canSend())
       rf12_recvDone();
 
     Serial.println("Advertise: s:display");
     rf12_sendStart(0, &_messageToAdvertise, sizeof _messageToAdvertise); // 0 to broadcast service
     rf12_sendWait(0); // 0= nome / 2=standby Wait for RF to finish sending
-    delay(delayBetweenAdvertise);
+    delay(DELAY_BETWEEN_ADVERTISE);
 
     sum_time = (millis()-start_time); 
   }else{
